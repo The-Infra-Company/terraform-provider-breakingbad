@@ -32,6 +32,10 @@ provider "breakingbad" {
 }
 ```
 
+## Output
+
+<img width="1036" alt="quote" src="https://github.com/user-attachments/assets/48089308-a0c6-4140-a58b-96b09c6d6946" />
+
 ## Building the Provider
 
 > [!NOTE]
