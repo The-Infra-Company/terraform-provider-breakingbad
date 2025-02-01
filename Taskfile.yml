@@ -1,0 +1,97 @@
+# Copyright (c) 1898 & Co.
+# SPDX-License-Identifier: Apache-2.0
+
+# https://taskfile.dev
+version: "3"
+tasks:
+  default:
+    desc: "Help menu"
+    cmds:
+      - task --list
+  build:
+    desc: "Build the provider binary"
+    cmds:
+      - go build -v ./...
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - terraform-provider-breakingbad
+  test:
+    desc: "Run acceptance tests against the provider"
+    env:
+      TF_ACC: "true"
+    cmds:
+      - go test ./... {{.CLI_ARGS}}
+  install-tfplugindocs:
+    desc: "Install the tfplugindocs tool"
+    cmds:
+      - go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.19.4
+    status:
+      - which tfplugindocs
+  install-goreleaser:
+    desc: "Install goreleaser"
+    cmds:
+      - go install github.com/goreleaser/goreleaser/v2@latest
+    status:
+      - which goreleaser
+  docs:
+    desc: "Update the docs generated from description fields"
+    deps:
+      - install-tfplugindocs
+    cmds:
+      - cd tools; go generate ./...
+      - sed -i.bak 's/breakingbad Provider/Breaking Bad Provider/g' docs/index.md
+      - rm docs/index.md.bak
+    sources:
+      - "breakingbad/**/*.go"
+      - "provider/**/*.go"
+      - "main.go"
+      - "examples/**/*.tf"
+      - "examples/**/*.sh"
+    generates:
+      - docs/**/*.md
+  install-providerlint:
+    desc: "Install tfproviderlint tool"
+    cmds:
+      - go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
+    status:
+      - which tfproviderlint
+  fmt:
+    desc: "Run gofumpt against the provider"
+    cmds:
+      - gofumpt -w .
+  lint:
+    desc: "Run linters against the provider"
+    deps:
+      - install-providerlint
+    cmds:
+      - golangci-lint run
+      - tfproviderlint -R018=false ./...
+      - cmd: |
+          export BADFMT=$(gofmt -s -l .)
+          test -z "$BADFMT" || (echo -e "invalid gofmt: $BADFMT"; exit 1)
+        silent: true
+      - go vet ./...
+  install:
+    desc: "Set up an override allowing a local version of the provider to be used"
+    cmds:
+      - cmd: |-
+          cat << EOF > ~/.terraformrc
+          provider_installation {
+            dev_overrides {
+              "The-Infra-Company/breakingbad" = "$GOPATH/bin"
+            }
+            direct {}
+          }
+          EOF
+  uninstall:
+    desc: "Remove any local overrides for local development"
+    cmds:
+      - rm ~/.terraformrc
+  sweep:
+    desc: "Remove any leftover resources from failed test runs"
+    dir: "sweep"
+    cmds:
+      - go run .
