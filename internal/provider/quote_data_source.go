@@ -39,6 +39,7 @@ func (d *QuoteDataSource) Metadata(ctx context.Context, req datasource.MetadataR
 
 func (d *QuoteDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Provides quotes and authors from Breaking Bad",
 		Attributes: map[string]schema.Attribute{
 			"quote": schema.StringAttribute{
 				Computed:    true,
