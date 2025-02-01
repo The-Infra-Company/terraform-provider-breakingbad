@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"gihub.com/The-Infra-Company/terraform-provider-breakingbad/internal/breakingbad"
+	"github.com/The-Infra-Company/terraform-provider-breakingbad/internal/breakingbad"
 )
 
 // Ensure the provider satisfies the provider.Provider interface.
